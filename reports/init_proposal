@@ -1,1 +1,10 @@
 Title: Reveal Hidden Infomation in the Notes: Composer Attribution
+Team members: Fang-Chieh Chou, Hsiang-Yu Yang, Yi-Hong Kuo
+
+Josquin des Prez is one of the most famous composers during Renaissance.  However, only 50 out of 336 works attributed to him was confirmed through musical sources.  (if we can find scores from independent sources, we have confidence that this is from him.)  For the rest of the works, we don’t have enough source-based evidences, and the only thing we can rely on is the musical style.  In this project, we will try to identify the works through similarity in the musical style using ML. 
+
+We propose here a few different possible methods to attack this problem.  We can transform a song into one matrix by discretize the time, and assign a number to every possible note.  For example, we can use 4xN matrix to represent a song with 4 vocal parts with time step N.  One method we will try is to treat a song as an “image” and apply the learning method to test the “image” similarity.  The possible methods we can use are XXXXXXX.
+
+One of the other feature we will try is the auto correlation and cross correlation between different vocal parts.  This corresponds to the similarity of different vocal parts in a song.  Since Josquin tend to repeat a melody many times in a song, this may be a good feature that will separate him from the other composer.
+
+Or more generally, we may tread notes as words, and apply those method used to find similarity between documents.  This gives the other possible features include distribution of the note frequency and duration, and the transition probability between notes.  The possible methods we can use are XXXXXXX.
