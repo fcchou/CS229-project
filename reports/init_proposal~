@@ -1,4 +1,4 @@
-Title: Reveal TRUEEEEEEE Information in the Music Scores: Composer Attribution
+Title: Reveal Hidden Information in the Music Scores: Composer Attribution
 Team members: Fang-Chieh Chou, Hsiang-Yu Yang, Yi-Hong Kuo
 
 Just like books are usually wrote in characteristic styles that can be used to attribute their authors, music scores contain rich information about the corresponding composers. With modern machine learning methods, it is possible to extract hidden information from the music scores to attribute the responsible composers. An intriguing composer attribution challenge is related to Josquin des Prez, one of the most famous composers during Renaissance. Due to his immense prestige, many anonymous works during that age were misattributed to Josquin. In 336 works attributed to Josquin, only 50 of them has been verified by independent sources (we will refer them the “positive dataset”). For the rest of the works, there is no enough evidence to determine whether or not they were indeed composed by Josquin (referred as the “unclassified dataset”).
