@@ -1,23 +1,29 @@
 import music21
 import glob
+import os.path
 
-#folders = ['Jos_all', 'Ock-20131020-224312', 'Others']
-folders = ['Others']
+folders = ['xml']
 
 all_files = []
 for folder in folders:
+    all_files += glob.glob(folder + '/*.xml')
     all_files += glob.glob(folder + '/*.krn')
 
 note_ps = set()
 note_ql = set()
 rest_ql = set()
 
-for krn_file in all_files:
-    print "Parsing", krn_file
+for filename in all_files:
+    print "Parsing %s" % filename
+    pkl_file = filename[:-3] + 'pkl'
     try:
-        score = music21.converter.parse(krn_file)
+        if os.path.exists(pkl_file):
+            score = music21.converter.thaw(pkl_file)
+        else:
+            score = music21.converter.parse(filename)
+            music21.converter.freeze(score, fp=pkl_file)
     except Exception:
-        print "ERROR in parsing", krn_file
+        print "ERROR in parsing", filename
         continue
     for note in score.flat.getElementsByClass(music21.note.Note):
         note_ps.add(note.ps)
