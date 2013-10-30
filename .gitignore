@@ -38,3 +38,5 @@ nosetests.xml
 .*.swp
 .ipynb_checkpoints/
 *.pkl
+
+music21
