@@ -5,7 +5,7 @@ import numpy as np
 
 all_files = glob.glob('correct_data/*.krn') + glob.glob('correct_data/*.xml')
 
-filebase = os.path.abspath('./correct_data/music21')
+filebase = os.path.abspath('./music21')
 
 
 all_comb = set()
@@ -17,7 +17,7 @@ for filename in all_files:
         print "ERROR in parsing", filename, err
         continue
     
-    print music21.converter.freeze(score, fmt='pickle', 
+    music21.converter.freeze(score, fmt='pickle', 
                                    fp=os.path.join(filebase, os.path.split(filename)[-1][:-4]+'.p'))
 
 	

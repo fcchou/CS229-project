@@ -2,10 +2,16 @@ import music21
 import glob
 import os.path
 import pickle
+import copy
 
-
-def reduce_score(score):
+def reduce_score(raw_score):
     ''' for counterpoint calculation.  Return a stream with all vertical pairs, indcuding rest. '''
+    #score = copy.deepcopy(raw_score)
+    score = raw_score
+    score.removeByNotOfClass(music21.stream.Part)
+    for part in score.parts:
+        part.removeByNotOfClass(music21.stream.Measure)
+
     numberofparts = len(score.parts)
     if numberofparts == 1:
         return score
@@ -16,32 +22,34 @@ def reduce_score(score):
     for i, newpart in enumerate(newparts):
         newpart.insert(0,score.parts[i].flat.getClefs()[0])
         newpart.insert(0,score.parts[i].flat.getTimeSignatures()[0])
-    
+
     # check if all parts have the same length
-    durations = [part.duration.quarterLength for part in score.parts]
+    #durations = [part.duration.quarterLength for part in score.parts]
+
     flag = False    
-    for i in range(1,len(durations)):
+    for i in range(1,len(score.parts)):
         if score.parts[i-1].duration.quarterLength != score.parts[i].duration.quarterLength:
-            #print "!!!!!Problem!!!!!"
+            print "!!!!!Problem!!!!!"
             flag = True
             break
 
-    #align all measures by setting the offset of each measure of parts equalto those of the first parts
-    for part in range(1, len(score.parts)):
-        for i in range(1, len(score.parts[part])):                        
-            score.parts[part][i].offset = score.parts[0][i].offset
-            
     # change the duration if measures have different duratoin in each part.
     # All the measures of other parts will have the same duration as those of the first part
     if flag:
-        for i in range(1,len(score.parts[0])-1):
+        #align all measures by setting the offset of each measure of parts equalto those of the first parts
+        for part in range(1, len(score.parts)):
+            for i in range(len(score.parts[part])):                        
+                score.parts[part][i].offset = score.parts[0][i].offset       
+                
+        for i in range(len(score.parts[0])):
             #print 'measure', i 
-            for j in range(len(score.parts)):
+            for j in range(1, len(score.parts)):
+                if score.parts[j][i].duration.quarterLength == 0:
+                    print " zero duration: measure", i, 'part', i
                 ratio = 1.0*score.parts[0][i].duration.quarterLength/score.parts[j][i].duration.quarterLength                         
                 if ratio != 1:
                     flag = True
-                    score.parts[j][i].augmentOrDiminish(ratio, inPlace=True)
-  
+                    score.parts[j][i].augmentOrDiminish(ratio, inPlace=True)  
     
     flatsparts = [part.flat.getElementsByClass([music21.note.Note, music21.note.Rest]) for part in score.parts]
     
@@ -171,12 +179,28 @@ if __name__ == '__main__':
     filebase = os.path.abspath('../data/music21')
     counterpoint = {}
     
-    for filename in all_files:        
+    problemlist = []
+    for filename in all_files:
+
         score = music21.converter.thaw(fp=os.path.join(filebase, os.path.split(filename)[-1]))
-        print 'extract', filename
+        print 'extract', filename[:-1]
+        #score = music21.converter.parse("D:\\Dropbox\\GitRepo\\cs229\\data\\xml\\Rue1029a.xml")
+        #music21.converter.freeze(score, fmt='pickle', 
+        #                          fp="D:\\Dropbox\\GitRepo\\cs229\\data\\xml\\\\Rue1029a.p")
 
-        cp = generate_all_counter_point_feature(score, revome_stationary=True)
+        cp = reduce_score(score)
+
+        try:
+            cp = generate_all_counter_point_feature(score, revome_stationary=True)
+        except:
+            cp = {}
+            problemlist.append(filename)            
+            
         counterpoint[os.path.split(filename)[-1][:-2]] = cp
-
+    
+    with open('problemlist.txt', 'w') as f:
+        for filename in problemlist:
+            f.write(filename+'\n')
+            
     pickle.dump(counterpoint, open( "counterpoint.p", "wb" ))
     
