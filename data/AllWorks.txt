@@ -75,7 +75,6 @@ Jos0502a-Missa_Une_mousse_de_Biscaye-Kyrie
 Jos0502b-Missa_Une_mousse_de_Biscaye-Gloria
 Jos0502c-Missa_Une_mousse_de_Biscaye-Credo
 Jos0502d-Missa_Une_mousse_de_Biscaye-Sanctus
-Jos0502e-Missa_Une_mousse_de_Biscaye-Agnus
 Jos0601a-Missa_Lhomme_arme_quarti_toni-Kyrie
 Jos0601b-Missa_Lhomme_arme_quarti_toni-Gloria
 Jos0601c-Missa_Lhomme_arme_quarti_toni-Credo
