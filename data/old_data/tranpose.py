@@ -90,7 +90,6 @@ for filename in all_files:
 # 2nd scan
 all_comb_dict = {}
 all_ps_diff_dict = {}
-
 for name, key, all_arr in itertools.izip(names, keys, all_arrs):
     for k in all_comb:
         all_comb_dict[k] = 0
@@ -103,47 +102,6 @@ for name, key, all_arr in itertools.izip(names, keys, all_arrs):
     for arr in all_arr:
         total_len += np.sum(arr[:,1])
     avg_len = total_len / n_parts
-
-    # Note histogram
-    note_hist = np.zeros(12)
-    bin_edges = np.arange(-0.5, 12.5, 1.0)
-    for arr in all_arr:
-        hist, be = np.histogram(
-            (arr[:, 0][arr[:, 0] != -1] - key) % 12,
-            bin_edges,
-            weights=(arr[:, 1][arr[:, 0] != -1])
-        )
-        note_hist += hist
-    #note_hist /= total_len  # Normalize
-
-    # ql histogram
-    note_ql_dict = OrderedDict()
-    rest_ql_dict = OrderedDict()
-    for i in note_ql:
-        note_ql_dict[i] = 0
-    for i in rest_ql:
-        rest_ql_dict[i] = 0
-    for arr in all_arr:
-        for note in arr:
-            if note[0] != -1:
-                note_ql_dict[note[1]] += 1
-            else:
-                rest_ql_dict[note[1]] += 1
-    note_ql_count = np.array(note_ql_dict.values())
-    rest_ql_count = np.array(rest_ql_dict.values())
-    avg_ql_note = (
-        note_ql_count * np.array(note_ql_dict.keys())
-        / np.sum(note_ql_count)
-    )
-    if np.sum(rest_ql_count) == 0:
-        avg_ql_rest = 0
-    else:
-        avg_ql_rest = (
-            rest_ql_count * np.array(rest_ql_dict.keys())
-            / np.sum(rest_ql_count)
-        )
-    note_ql_hist = note_ql_count * np.array(note_ql_dict.keys()) / total_len
-    rest_ql_hist = rest_ql_count * np.array(rest_ql_dict.keys()) / total_len
 
     # Combination and diff
     for arr in all_arr:
@@ -160,8 +118,8 @@ for name, key, all_arr in itertools.izip(names, keys, all_arrs):
                     all_ps_diff_dict[ps - ps0] += 1
     features = np.hstack((
         all_ps_diff_dict.values()))
-    # np.save(name.replace(".npz", "_feature1"), features)
-    np.save(name.replace(".npz", "_feature1"), note_hist)
+    np.save(name.replace(".npz", "_feature1"), features)
+    #np.save(name.replace(".npz", "_feature1"), note_hist)
 
 """
     # ql histogram

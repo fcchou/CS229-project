@@ -100,10 +100,10 @@ if __name__  == "__main__":
     song_counter_point = []        
     song_pitch_duration = []
     for name in song_name:
-        feature = get_feature1(pitch_duration[name], one_octave=False, pitch_only=True)
+        feature = get_feature1(pitch_duration[name], one_octave=False, pitch_only=False)
         song_pitch_duration.append(feature)
         
-        feature = get_counterpoint(counter_point[name], one_octave=True)
+        feature = get_counterpoint(counter_point[name], one_octave=False)
         song_counter_point.append(feature)
         
     
@@ -124,17 +124,17 @@ if __name__  == "__main__":
     
     
     # test normalization
-#    normalizer = TfidfTransformer(norm='l1', use_idf=True)
-#    X_norm = normalizer.fit_transform(X).toarray()
+#    normalizer = TfidfTransformer(norm='l2', use_idf=True)
+#    X_norm = normalizer.fit_transform(X_cp).toarray()
             
     ## fitting method            
 #    clf = LogisticRegression(C=300, class_weight='auto')
             
-#    estimators = [('normalizer', TfidfTransformer(norm='l1', use_idf=False)), 
-#                  ('logistic', LogisticRegression(C=300, class_weight='auto'))]
+#    estimators = [('normalizer', TfidfTransformer(norm='l1', use_idf=True)), 
+#                  ('logistic', LogisticRegression(C=1000, class_weight='auto'))]
 #    clf = Pipeline(estimators)            
             
-    #clf = MultinomialNB()    
+    clf = MultinomialNB()    
     
 
 #    estimators = [('normalizer', preprocessing.Normalizer(norm='l2')),     
@@ -143,24 +143,25 @@ if __name__  == "__main__":
 #    clf = Pipeline(estimators)    
     
 #    estimators = [('normalizer', TfidfTransformer(norm='l2', use_idf=True)),
-#                  ('svm', sklearn.svm.SVC(kernel='poly', degree=1, C=8000, 
+#                  ('svm', sklearn.svm.SVC(kernel='poly', degree=1, C=27825, 
 #                                          class_weight='auto'))]
-    
+#    
 #    clf = Pipeline(estimators)
-    estimators = [('normalizer', TfidfTransformer(norm='l1', use_idf=True)),
-                  ('svm', sklearn.svm.LinearSVC(C=130, class_weight='auto'))]
-    clf = Pipeline(estimators)
+#    
+#    estimators = [('normalizer', TfidfTransformer(norm='l1', use_idf=True)),
+#                  ('svm', sklearn.svm.LinearSVC(C=130, class_weight='auto'))]
+#    clf = Pipeline(estimators)
     
 #    tuned_parameters = {'svm__C': np.logspace(0,3,10)}
     
     #clf = DummyClassifier(strategy='most_frequent',random_state=0)
-    #clf = DummyClassifier(strategy='stratified',random_state=0)
-    #clf = DummyClassifier(strategy='uniform',random_state=0)
+    #clf = DummyClassifier(strategy='stratified')
+#    clf = DummyClassifier(strategy='uniform')
     #clf = LDA(n_components=3)
     #clf = RandomForestClassifier(n_estimators=10, max_features=30)    
     
-#    clf = Pipeline(steps=[('normalizer', preprocessing.Normalizer()),
-#                          ('rbm', BernoulliRBM(learning_rate =0.01, n_iter=100, n_components=100, verbose=True)), 
+#    clf = Pipeline(steps=[
+#                          ('rbm', BernoulliRBM(learning_rate =0.005, n_iter=30, n_components=30, verbose=True)), 
 #                          ('logistic', LogisticRegression(C = 100.0))])
     
 
@@ -172,14 +173,33 @@ if __name__  == "__main__":
 #    print classification_report( y_test, y_predict)
         
     # Cross_validation
-#    scores = cross_validation.cross_val_score(clf, X, y,
-#                                              scoring='f1', cv=10, 
+#    scores = cross_validation.cross_val_score(clf, X_cp, y,
+#                                              scoring='precision', cv=10, 
 #                                              verbose=1 ,n_jobs=1)
 #    score_mean = np.mean(scores)
 #    score_std = np.std(scores)
 #    
 #    print 'f1', score_mean, score_std
-    
+
+
+
+#from sklearn.metrics import precision_score, accuracy_score, recall_score, f1_score
+#X, y = shuffle(X_cp, y)
+#
+#accu = []
+#prec = []
+#reca = []
+#f1 =[]
+#cv = cross_validation.StratifiedKFold(y, n_folds=10)
+#for train, test in cv:
+#    clf.fit(X[train], y[train])
+#    pred = clf.predict(X[test])
+#    accu.append(accuracy_score(y[test], pred))
+#    prec.append(precision_score(y[test], pred))
+#    reca.append(recall_score(y[test], pred))
+#    f1.append(f1_score(y[test], pred))
+#print np.average(accu), np.average(prec), np.average(reca), np.average(f1)
+
     
 #    ## PCA/LDA visualization
 #    estimators = [('normalizer', preprocessing.Normalizer(norm='l1')),                  
@@ -219,7 +239,7 @@ if __name__  == "__main__":
 #    pl.show()
     
 ##Learning Curve: single feature###    
-    train_size = range(10,int(y.shape[0]*0.8),30)
+    train_size = range(10,int(y.shape[0]*0.8),10)
     
     train_errors = np.zeros((10,len(train_size)))
     test_errors = np.zeros((10,len(train_size)))    
@@ -247,11 +267,11 @@ if __name__  == "__main__":
             
             #get error
             
-            train_errors[k,i] = sklearn.metrics.f1_score(y[train[train_index]], 
+            train_errors[k,i] = sklearn.metrics.accuracy_score(y[train[train_index]], 
                                                          clf.predict(X))
                                                          
             X = X_data[test]            
-            test_errors[k,i]  = sklearn.metrics.f1_score(y[test], 
+            test_errors[k,i]  = sklearn.metrics.accuracy_score(y[test], 
                                                          clf.predict(X))
     
     train_errors_mean = np.mean(train_errors,axis=0)
@@ -260,17 +280,17 @@ if __name__  == "__main__":
     test_error_std = np.std(test_errors,axis=0)/3.16
     
     plt.figure()
-    plt.plot(train_size, train_errors_mean, 'b-.', label='training', hold=True) 
+    plt.plot(train_size, train_errors_mean, 'b.', label='training', hold=True) 
     plt.plot(train_size, train_errors_mean+train_error_std, 'b-', hold=True) 
     plt.plot(train_size, train_errors_mean-train_error_std, 'b-', hold=True) 
-    plt.plot(train_size, test_errors_mean, 'r*-',label='testing') 
+    plt.plot(train_size, test_errors_mean, 'r*',label='testing') 
     plt.plot(train_size, test_errors_mean+test_error_std, 'r-', hold=True) 
     plt.plot(train_size, test_errors_mean-test_error_std, 'r-', hold=True) 
     plt.legend(loc=4)
     plt.xlabel('Size of training set')
     plt.ylabel('f1 score')
     
-#    plt.show()    
+    plt.show()    
 
 ##Learning Curve: single feature with grid search###    
 #    train_size = range(30,int(y.shape[0]*0.8),30)
@@ -380,15 +400,15 @@ if __name__  == "__main__":
 #    
 #    plt.show()
 
-#tuned_parameters = [{'svm__C': np.logspace(0,3,10)}]
+tuned_parameters = [{'svm__C': np.logspace(0,5,10)}]
 
-###k-fold grid search
+##k-fold grid search
 #k_fold = cross_validation.StratifiedShuffleSplit(y, test_size=0.1)
 #for k, (train, test) in enumerate(k_fold):
 #    print("# Tuning hyper-parameters for %s" % 'f1')
 #    
 #    clf_best = GridSearchCV(clf, tuned_parameters, cv=10, scoring='f1', verbose=1)
-#    clf_best.fit(X[train], y[train])
+#    clf_best.fit(X_cp[train], y[train])
 #    
 #    print "Best parameters set found on development set:"
 #    print clf_best.best_params_
@@ -403,7 +423,7 @@ if __name__  == "__main__":
 ##    print("Detailed classification report:")
 ##    print("The model is trained on the full development set.")
 ##    print("The scores are computed on the full evaluation set.")
-##    y_true, y_pred = song_label[test], clf_best.predict(song_feature[test])
+#    y_true, y_pred = y[test], clf_best.predict(X_cp[test])
 ##    print(classification_report(y_true, y_pred))
-#    print clf_best.score(X[test], y[test])
+#    print clf_best.score(y_true, y_pred)
         
