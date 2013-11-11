@@ -28,7 +28,7 @@ def cp_regularize3(cp):
     return (a, cp[1], c)
 
 def cp_regularize(cp):
-    return cp_regularize3(cp)
+    return cp_regularize1(cp)
 
 all_cp = {}
 for score in score_dict.itervalues():
@@ -70,9 +70,9 @@ for name, score in score_dict.iteritems():
         cp = cp_regularize(cp)
         cp_dict[cp] += count
 
-    #arr = np.load('../data/correct_data/%s_feature1.npy' % name)
+    arr = np.load('../data/correct_data/%s_feature1.npy' % name)
     #arr = np.hstack((arr, cp_dict.values()))
-    arr = cp_dict.values()
+    #arr = cp_dict.values()
     features.append(arr)
 
 features = np.array(features)
@@ -84,15 +84,14 @@ labels, features, names = shuffle(labels, features, names)
 #clf = LogisticRegression()
 #clf = MultinomialNB()
 #clf = sklearn.svm.SVC(C=0.001, gamma =10000)
-clf = sklearn.svm.LinearSVC(C=130)
+clf = sklearn.svm.LinearSVC(C=10)
 
-from sklearn.metrics import precision_score, accuracy_score, recall_score, f1_score
+from sklearn.metrics import precision_score, accuracy_score, recall_score
 
 
 accu = []
 prec = []
 reca = []
-f1 = []
 cv = cross_validation.StratifiedKFold(labels, n_folds=10)
 for train, test in cv:
     clf.fit(features[train], labels[train])
@@ -100,5 +99,4 @@ for train, test in cv:
     accu.append(accuracy_score(labels[test], pred))
     prec.append(precision_score(labels[test], pred))
     reca.append(recall_score(labels[test], pred))
-    f1.append(f1_score(labels[test], pred))
-print np.average(accu), np.average(prec), np.average(reca), np.average(f1)
+print np.average(accu), np.average(prec), np.average(reca)

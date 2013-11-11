@@ -40,5 +40,4 @@ nosetests.xml
 .ipynb_checkpoints/
 *.pkl
 *.npy
-
-music21
+*.npz
