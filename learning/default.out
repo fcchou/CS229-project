@@ -1,0 +1,7 @@
+Fitting 40 folds for each of 52 candidates, totalling 2080 fits
+[Parallel(n_jobs=4)]: Done   1 jobs       | elapsed:    0.5s
+[Parallel(n_jobs=4)]: Done  50 jobs       | elapsed:    9.6s
+[Parallel(n_jobs=4)]: Done 200 jobs       | elapsed:   58.6s
+[Parallel(n_jobs=4)]: Done 450 jobs       | elapsed:  4.3min
+[Parallel(n_jobs=4)]: Done 800 jobs       | elapsed:  7.2min
+[Parallel(n_jobs=4)]: Done 1250 jobs       | elapsed: 12.2min

@@ -7,23 +7,35 @@ import cPickle as pickle
 
 
 class FeatureExtract(object):
-    def __init__(self, save_data=True, use_saved_data=True):
+    def __init__(
+            self, save_data=True,
+            use_saved_features=True, use_saved_npz=True):
         'Init by getting all the works.'
         self._self_dir = path.abspath(path.dirname(__file__))
-        self.use_saved_data = use_saved_data
+        self.use_saved_features = use_saved_features
+        self.use_saved_npz = use_saved_npz
         self.save_data = save_data
-        self.works = []
         self.npz_data = None
         self._vectorizer = DictVectorizer()
 
         if save_data and not path.isdir('features'):
             os.mkdir('features')
 
-        with open(self._get_path('work_list/AllWorks.txt')) as f:
-            for line in f:
-                self.works.append(line.split('-')[0])
-        if self.save_data:
-            np.save('features/all_works', self.works)
+        work_fname = 'features/all_works.npy'
+        if use_saved_features and path.isfile(work_fname):
+            self._works = np.load(work_fname)
+        else:
+            works = []
+            with open(self._get_path('work_list/AllWorks.txt')) as f:
+                for line in f:
+                    works.append(line.split('-')[0])
+            self._works = np.array(works)
+            if self.save_data:
+                np.save('features/all_works', self.works)
+
+    @property
+    def works(self):
+        return self._works.copy()
 
     def clear_saved_data(clear_features=True, clear_npz=True):
         '''
@@ -60,29 +72,30 @@ class FeatureExtract(object):
     def _get_attr_setup(typename='default', load_npz=True):
         def wrap(func):
             def wrap_func(self, *args):
-                if self.use_saved_data:
+                if self.use_saved_features:
                     data = self._get_feature(typename)
                     if data is not None:
                         return data
                 if load_npz and self.npz_data is None:
-                    self.load_npz_data()
+                    self._load_npz_data()
                 return func(self, *args)
             return wrap_func
         return wrap
 
-    def get_labels(self):
+    @property
+    def labels(self):
         '''
         Decide the labels
         2 for unsecure Jos, 1 for secure Jos, 0 for others
         '''
         #TODO consider labeling different authors for multiclass assignment
         fname = 'features/labels'
-        if self.use_saved_data and path.isfile(fname):
+        if self.use_saved_features and path.isfile(fname):
             return np.load(fname)
         with open(self._get_path('work_list/Josquin_secure.txt')) as f:
             secure_jos = set(f.read().splitlines())
         labels = []
-        for work in self.works:
+        for work in self._works:
             label = 0
             if 'Jos' in work:
                 if work in secure_jos:
@@ -95,7 +108,7 @@ class FeatureExtract(object):
             np.save(fname, labels)
         return labels
 
-    def load_npz_data(self):
+    def _load_npz_data(self):
         '''
         Load cached numpy npz data for all notes' ps and quarterLength (ql).
         Each woek contains multiple parts as nested list, each part is a
@@ -105,7 +118,7 @@ class FeatureExtract(object):
 
         def get_npz(name):
             fname = 'npz_data/%s.npz' % name
-            if self.use_saved_data and path.isfile(fname):
+            if self.use_saved_npz and path.isfile(fname):
                 all_data = np.load(fname)
                 # Each work contains many parts. Loop through each one.
                 return [all_data[i] for i in all_data.files]
@@ -135,11 +148,12 @@ class FeatureExtract(object):
         if self.save_data and not path.isdir('npz_data'):
             os.mkdir('npz_data')
         self.npz_data = []
-        for work in self.works:
+        for work in self._works:
             self.npz_data.append(get_npz(work))
 
+    @property
     @_get_attr_setup('ps_diff')
-    def get_ps_diff(self):
+    def feature_ps_diff(self):
         '''
         Get the ps differnce histogram feature.
         '''
@@ -158,8 +172,9 @@ class FeatureExtract(object):
             self._dump_feature(feature, names, 'ps_diff')
         return feature, names
 
+    @property
     @_get_attr_setup('ql_diff')
-    def get_ql_diff(self):
+    def feature_ql_diff(self):
         '''
         Get the quarterLength differnce histogram feature (for notes only).
         '''
@@ -178,8 +193,9 @@ class FeatureExtract(object):
             self._dump_feature(feature, names, 'ql_diff')
         return feature, names
 
+    @property
     @_get_attr_setup('ps_ql_pair')
-    def get_ps_ql_pair(self):
+    def feature_ps_ql_pair(self):
         '''
         Get the ps-ql pair histogram feature.
         '''
@@ -196,4 +212,34 @@ class FeatureExtract(object):
         feature, names = self._vectorize(dict_list)
         if self.save_data:
             self._dump_feature(feature, names, 'ps_ql_pair')
+        return feature, names
+
+    @property
+    @_get_attr_setup('cp')
+    def feature_cp(self):
+        '''
+        Get the counterpoint histogram feature.
+        '''
+        def cp_convert(cp_tuple):
+            a, b, c = cp_tuple
+            if a < 0 or (a == 0 and c < 0):
+                d = a + b + c
+                a, b, c = -a, d, -c
+            if a >= 7:
+                a1 = a % 7
+                c += a1 - a
+                a = a1
+            return a, b, c
+
+        score_dict = pickle.load(open(self._get_path('data/counterpoint.p')))
+        dict_list = []
+        for work in self._works:
+            new_dict = Counter()
+            for key, val in score_dict[work].iteritems():
+                #key = cp_convert(key)
+                new_dict[key] += val
+            dict_list.append(new_dict)
+        feature, names = self._vectorize(dict_list)
+        if self.save_data:
+            self._dump_feature(feature, names, 'cp')
         return feature, names

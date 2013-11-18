@@ -3,9 +3,9 @@ import numpy as np
 from glob import glob
 import os.path
 
-n = 3
+n = 2
 n_feature = 9*pow(15,n-1)
-outdir = './length3/'
+outdir = './length2/'
 
 def get_mirror(pd):
     if pd < 1:
@@ -29,7 +29,7 @@ for name in glob('./pd_class_arrs/*.npy'):
     feature_arr = np.zeros(n_feature, dtype=int)
     pd_class_arr = np.load(name)
     n_move = pd_class_arr.shape[0]
-    
+
     for ii in range(n_move-n+1):
         skip = 0
         mirror = 0 # 0:pending, -1:no flip, 1:flip
@@ -41,7 +41,7 @@ for name in glob('./pd_class_arrs/*.npy'):
                    mirror = -1
                elif pd_class_arr[ii+jj] > 9:
                    mirror = 1
-        
+
         if skip == 0:
             i_feature = 0
             if mirror < 1:
@@ -51,7 +51,14 @@ for name in glob('./pd_class_arrs/*.npy'):
                 for jj in range(n):
                     i_feature = i_feature + pow(15, n-jj-1)*(get_mirror(pd_class_arr[ii+jj])-1)
             feature_arr[i_feature] = feature_arr[i_feature] + 1
-            
+
     filename = os.path.basename(name)
     fulloutpath = outdir + filename[:-4]
     np.save(fulloutpath, pd_class_arr)
+
+from collections import Count
+import pickle
+
+dict_new = Count()
+dict_new[(12,2)] += 1
+pickle.dump(dict_new, open('xxxx.pkl', 'wb'))

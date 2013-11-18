@@ -7,30 +7,36 @@ from sklearn.linear_model import LogisticRegression
 from sklearn import cross_validation
 import sklearn.svm
 from sklearn.utils import shuffle
+from sklearn.feature_extraction.text import TfidfTransformer
 
 import sys
 sys.path.append('../')
 from jos_learn.features import FeatureExtract
+normalizer = TfidfTransformer()
 
-extractor = FeatureExtract(save_data=True)
-labels = extractor.get_labels()
+extractor = FeatureExtract()
+labels = extractor.labels
 #features, feature_names = extractor.get_ps_ql_pair()
-features, feature_names = extractor.get_ps_diff()
-features = features[labels != 2]
+feature1, feature_names1 = extractor.feature_cp
+feature2, feature_names2 = extractor.feature_ps_ql_pair
+#features = np.hstack((feature1, feature2))[labels != 2]
+features =feature1[labels != 2]
+features = normalizer.fit_transform(features).toarray()
 labels = labels[labels != 2]
+print features.shape
 
 labels, features = shuffle(labels, features)
 #clf = LogisticRegression()
 #clf = MultinomialNB()
 #clf = sklearn.svm.SVC()
-clf = sklearn.svm.LinearSVC(C=0.01)
+clf = sklearn.svm.LinearSVC(C=10, class_weight='auto')
 
 from sklearn.metrics import accuracy_score, f1_score
 
 
 accu = []
 f1 = []
-cv = cross_validation.StratifiedKFold(labels, n_folds=10)
+cv = cross_validation.StratifiedShuffleSplit(labels, 60)
 for train, test in cv:
     clf.fit(features[train], labels[train])
     pred = clf.predict(features[test])
