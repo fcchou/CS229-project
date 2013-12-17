@@ -97,6 +97,8 @@ class FeatureExtract(object):
         labels = []
         for work in self._works:
             label = 0
+            if 'Ock' in work:
+                label = -1
             if 'Jos' in work:
                 if work in secure_jos:
                     label = 1
@@ -214,9 +216,7 @@ class FeatureExtract(object):
             self._dump_feature(feature, names, 'ps_ql_pair')
         return feature, names
 
-    @property
-    @_get_attr_setup('cp')
-    def feature_cp(self):
+    def _feature_cp_general(self, name):
         '''
         Get the counterpoint histogram feature.
         '''
@@ -231,7 +231,7 @@ class FeatureExtract(object):
                 a = a1
             return a, b, c
 
-        score_dict = pickle.load(open(self._get_path('data/counterpoint.p')))
+        score_dict = pickle.load(open(self._get_path('data/%s.p' % name)))
         dict_list = []
         for work in self._works:
             new_dict = Counter()
@@ -241,5 +241,29 @@ class FeatureExtract(object):
             dict_list.append(new_dict)
         feature, names = self._vectorize(dict_list)
         if self.save_data:
-            self._dump_feature(feature, names, 'cp')
+            self._dump_feature(feature, names, name)
         return feature, names
+
+    @property
+    @_get_attr_setup('cp')
+    def feature_cp(self):
+        '''
+        Get the counterpoint histogram feature.
+        '''
+        return self._feature_cp_general('counterpoint')
+
+    @property
+    @_get_attr_setup('cp_interval')
+    def feature_cp_intv(self):
+        '''
+        Get the counterpoint histogram feature.
+        '''
+        return self._feature_cp_general('counterpoint_interval_new')
+
+    @property
+    @_get_attr_setup('cp_chromatic')
+    def feature_cp_chrom(self):
+        '''
+        Get the counterpoint histogram feature.
+        '''
+        return self._feature_cp_general('counterpoint_chromatic')
